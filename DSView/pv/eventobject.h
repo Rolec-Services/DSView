@@ -44,6 +44,7 @@ signals:
     void frame_began();
 
     void decode_done();
+    void decode_complete();
     void receive_data_len(quint64 len);
     void cur_snap_samplerate_changed();
     void trigger_message(int msg);

@@ -121,6 +121,7 @@ static void _loadApp(AppOptions &o, QSettings &st)
     getFiled("trigPosDisplayInMid", st, o.trigPosDisplayInMid, true);
     getFiled("displayProfileInBar", st, o.displayProfileInBar, false);
     getFiled("swapBackBufferAlways", st, o.swapBackBufferAlways, false);
+    getFiled("autoSaveCapture", st, o.autoSaveCapture, false);
     getFiled("fontSize", st, o.fontSize, 9.0);
     getFiled("autoScrollLatestData", st, o.autoScrollLatestData, true);
     getFiled("version", st, o.version, 1);
@@ -158,6 +159,7 @@ static void _saveApp(AppOptions &o, QSettings &st)
     setFiled("trigPosDisplayInMid", st, o.trigPosDisplayInMid);
     setFiled("displayProfileInBar", st, o.displayProfileInBar);
     setFiled("swapBackBufferAlways", st, o.swapBackBufferAlways);
+    setFiled("autoSaveCapture", st, o.autoSaveCapture);
     setFiled("fontSize", st, o.fontSize);
     setFiled("autoScrollLatestData", st, o.autoScrollLatestData);
     setFiled("version", st, APP_CONFIG_VERSION);

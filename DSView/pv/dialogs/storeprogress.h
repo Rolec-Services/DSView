@@ -63,6 +63,7 @@ public:
     }
 
     void save_run(ISessionDataGetter *getter);
+    void save_run_auto(ISessionDataGetter *getter);
     void export_run();
  
 private:

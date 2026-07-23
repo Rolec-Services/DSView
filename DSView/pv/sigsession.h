@@ -369,8 +369,16 @@ public:
         _callback->decode_done();
     }
 
+    inline void decode_complete(){
+        _callback->decode_complete();
+    }
+
     inline bool is_saving(){
         return _is_saving;
+    }
+
+    inline bool is_decoding(){
+        return _is_decoding;
     }
 
     inline void set_saving(bool flag){

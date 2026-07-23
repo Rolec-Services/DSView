@@ -57,6 +57,7 @@
 #include "data/analogsnapshot.h"
 
 #include "dialogs/about.h"
+#include "dialogs/capturesetupdlg.h"
 #include "dialogs/deviceoptions.h"
 #include "dialogs/storeprogress.h"
 #include "dialogs/waitingdialog.h"
@@ -130,6 +131,7 @@ namespace pv
 
         _is_auto_switch_device = false;
         _is_save_confirm_msg = false;
+        _auto_save_pending = false;
 
         _pattern_mode = "random";
 
@@ -257,6 +259,7 @@ namespace pv
         connect(&_event, SIGNAL(frame_ended()), this, SLOT(on_frame_ended()), Qt::DirectConnection);
         connect(&_event, SIGNAL(frame_began()), this, SLOT(on_frame_began()), Qt::DirectConnection);
         connect(&_event, SIGNAL(decode_done()), this, SLOT(on_decode_done()));
+        connect(&_event, SIGNAL(decode_complete()), this, SLOT(on_decode_complete()));
         connect(&_event, SIGNAL(data_updated()), this, SLOT(on_data_updated()));
         connect(&_event, SIGNAL(cur_snap_samplerate_changed()), this, SLOT(on_cur_snap_samplerate_changed()));
         connect(&_event, SIGNAL(receive_data_len(quint64)), this, SLOT(on_receive_data_len(quint64)));
@@ -281,6 +284,7 @@ namespace pv
         connect(_file_bar, SIGNAL(sig_load_file(QString)), this, SLOT(on_load_file(QString)));
         connect(_file_bar, SIGNAL(sig_save()), this, SLOT(on_save()));
         connect(_file_bar, SIGNAL(sig_export()), this, SLOT(on_export()));
+        connect(_file_bar, SIGNAL(sig_capture_setup()), this, SLOT(on_capture_setup()));
         connect(_file_bar, SIGNAL(sig_screenShot()), this, SLOT(on_screenShot()), Qt::QueuedConnection);
         connect(_file_bar, SIGNAL(sig_load_session(QString)), this, SLOT(on_load_session(QString)));
         connect(_file_bar, SIGNAL(sig_store_session(QString)), this, SLOT(on_store_session(QString)));
@@ -615,6 +619,12 @@ namespace pv
         StoreProgress *dlg = new StoreProgress(_session, this);
         dlg->SetView(_view);
         dlg->save_run(this);
+    }
+
+    void MainWindow::on_capture_setup()
+    {
+        pv::dialogs::CaptureSetupDlg dlg;
+        dlg.ShowDlg(this);
     }
 
     void MainWindow::on_export()
@@ -1506,6 +1516,7 @@ namespace pv
     void MainWindow::on_frame_ended()
     {
         _view->receive_end();
+        maybe_auto_save_capture();
     }
 
     void MainWindow::frame_began()
@@ -1539,9 +1550,19 @@ namespace pv
         _event.decode_done(); // safe call
     }
 
+    void MainWindow::decode_complete()
+    {
+        _event.decode_complete(); // safe call
+    }
+
     void MainWindow::on_decode_done()
     {
         _protocol_widget->update_model();
+    }
+
+    void MainWindow::on_decode_complete()
+    {
+        maybe_auto_save_capture();
     }
 
     void MainWindow::receive_data_len(quint64 len)
@@ -1641,6 +1662,55 @@ namespace pv
 
         _is_save_confirm_msg = false;
         return ret;
+    }
+
+    void MainWindow::maybe_auto_save_capture()
+    {
+        AppConfig &app = AppConfig::Instance();
+        if (!app.appOptions.autoSaveCapture)
+        {
+            dsv_info("Auto-save is disabled.");
+            return;
+        }
+        if (_session->is_saving())
+        {
+            dsv_info("Auto-save skipped: a save is already in progress.");
+            return;
+        }
+        if (_session->have_hardware_data() == false)
+        {
+            dsv_info("Auto-save skipped: no hardware data available.");
+            return;
+        }
+
+        if (_session->is_decoding())
+        {
+            dsv_info("Auto-save deferred until decoding finishes.");
+            _auto_save_pending = true;
+            return;
+        }
+
+        dsv_info("Auto-save conditions met, starting save now.");
+        start_auto_save_capture();
+    }
+
+    void MainWindow::start_auto_save_capture()
+    {
+        if (_session->is_saving())
+        {
+            dsv_info("Auto-save start skipped: a save is already in progress.");
+            return;
+        }
+
+        _auto_save_pending = false;
+
+        using pv::dialogs::StoreProgress;
+
+        dsv_info("Auto-save starting StoreProgress dialog.");
+        _session->set_saving(true);
+        StoreProgress *dlg = new StoreProgress(_session, this);
+        dlg->SetView(_view);
+        dlg->save_run_auto(this);
     }
 
     void MainWindow::check_config_file_version()
@@ -2076,6 +2146,9 @@ namespace pv
                         _session->set_device(devh);
                     }
                 }
+
+                if (_auto_save_pending)
+                    start_auto_save_capture();
                 break;
             }
             case DSV_MSG_CLEAR_DECODE_DATA:

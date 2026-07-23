@@ -2039,6 +2039,8 @@ namespace pv
 
         dsv_info("------->decode thread end");
         _is_decoding = false;        
+        if (!_bClose && _callback != NULL)
+            _callback->decode_complete();
     }
 
     Snapshot *SigSession::get_signal_snapshot()

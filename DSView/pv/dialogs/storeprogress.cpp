@@ -174,7 +174,7 @@ void StoreProgress::accept()
     }
 
     // Get data range
-    if (_store_session->IsLogicDataType() && _view != NULL)
+    if (_store_session->IsLogicDataType() && _view != NULL && _start_cursor != NULL && _end_cursor != NULL)
     {
         uint64_t start_index = 0;
         uint64_t end_index = 0;
@@ -293,6 +293,29 @@ void StoreProgress::save_run(ISessionDataGetter *getter)
     }
 
     show();  
+}
+
+void StoreProgress::save_run_auto(ISessionDataGetter *getter)
+{
+    dsv_info("Auto-save run started.");
+    _isExport = false;
+    setTitle(L_S(STR_PAGE_DLG, S_ID(IDS_DLG_SAVE), "Save"));
+    QString file = _store_session->MakeSaveFile(false);
+    _fileLab->setText(file);
+    _store_session->_sessionDataGetter = getter;
+
+    _progress->setVisible(true);
+    _fileLab->setVisible(false);
+    _openButton->setVisible(false);
+
+    if (_ckOrigin != NULL){
+        _ckOrigin->setVisible(false);
+        _ckCompress->setVisible(false);
+    }
+    _space->setVisible(true);
+
+    show();
+    QTimer::singleShot(0, this, SLOT(accept()));
 }
 
 void StoreProgress::export_run()

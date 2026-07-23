@@ -40,6 +40,7 @@ public:
     virtual void show_wait_trigger()=0;
     virtual void repeat_hold(int percent)=0;
     virtual void decode_done()=0;
+    virtual void decode_complete()=0;
     virtual void receive_data_len(quint64 len)=0;    
     virtual void receive_header()=0;
     virtual void trigger_message(int msg)=0;  

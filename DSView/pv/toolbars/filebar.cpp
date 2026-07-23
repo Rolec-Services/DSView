@@ -69,6 +69,9 @@ FileBar::FileBar(SigSession *session, QWidget *parent) :
      
     _action_export = new QAction(this);
     _action_export->setObjectName(QString::fromUtf8("actionExport"));
+
+    _action_capture_setup = new QAction(this);
+    _action_capture_setup->setObjectName(QString::fromUtf8("actionCaptureSetup"));
      
     _action_capture = new QAction(this);
     _action_capture->setObjectName(QString::fromUtf8("actionCapture"));
@@ -81,6 +84,7 @@ FileBar::FileBar(SigSession *session, QWidget *parent) :
     _menu->addAction(_action_open);
     _menu->addAction(_action_save);
     _menu->addAction(_action_export);
+    _menu->addAction(_action_capture_setup);
     _menu->addAction(_action_capture);
     _file_button.setMenu(_menu);
     addWidget(&_file_button);
@@ -91,6 +95,7 @@ FileBar::FileBar(SigSession *session, QWidget *parent) :
     connect(_action_open, SIGNAL(triggered()), this, SLOT(on_actionOpen_triggered()));
     connect(_action_save, SIGNAL(triggered()), this, SIGNAL(sig_save()));
     connect(_action_export, SIGNAL(triggered()), this, SIGNAL(sig_export()));
+    connect(_action_capture_setup, SIGNAL(triggered()), this, SLOT(on_actionCaptureSetup_triggered()));
     connect(_action_capture, SIGNAL(triggered()), this, SLOT(on_actionCapture_triggered()));
 
     ADD_UI(this);
@@ -111,6 +116,7 @@ void FileBar::retranslateUi()
     _action_open->setText(L_S(STR_PAGE_TOOLBAR, S_ID(IDS_TOOLBAR_FILE_OPEN), "&Open..."));
     _action_save->setText(L_S(STR_PAGE_TOOLBAR, S_ID(IDS_TOOLBAR_FILE_SAVE), "&Save..."));
     _action_export->setText(L_S(STR_PAGE_TOOLBAR, S_ID(IDS_TOOLBAR_FILE_EXPORT), "&Export..."));
+    _action_capture_setup->setText(QStringLiteral("Capture S&etup..."));
     _action_capture->setText(L_S(STR_PAGE_TOOLBAR, S_ID(IDS_TOOLBAR_FILE_CAPTURE), "&Capture..."));
 }
 
@@ -125,6 +131,7 @@ void FileBar::reStyle()
     _action_open->setIcon(QIcon(iconPath+"/open.svg"));
     _action_save->setIcon(QIcon(iconPath+"/save.svg"));
     _action_export->setIcon(QIcon(iconPath+"/export.svg"));
+    _action_capture_setup->setIcon(QIcon(iconPath+"/gear.svg"));
     _action_capture->setIcon(QIcon(iconPath+"/capture.svg"));
     _file_button.setIcon(QIcon(iconPath+"/file.svg"));
 }
@@ -239,6 +246,11 @@ void FileBar::on_actionCapture_triggered()
     _file_button.close();
     QCoreApplication::sendPostedEvents();
     QTimer::singleShot(100, this, SIGNAL(sig_screenShot()));
+}
+
+void FileBar::on_actionCaptureSetup_triggered()
+{
+    emit sig_capture_setup();
 }
 
 void FileBar::update_view_status()

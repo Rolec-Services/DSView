@@ -139,6 +139,8 @@ bool StoreSession::save_start()
 { 
     assert(_sessionDataGetter);
 
+    dsv_info("StoreSession::save_start() begin.");
+
     std::set<int> type_set;
     for(auto s : _session->get_signals()) {
         type_set.insert(s->get_type());
@@ -147,15 +149,18 @@ bool StoreSession::save_start()
     if (type_set.size() > 1) {
         _error = L_S(STR_PAGE_MSG, S_ID(IDS_MSG_STORESESS_SAVESTART_ERROR1),
                 "DSView does not currently support\nfile saving for multiple data types.");
+        dsv_info("StoreSession::save_start() aborted: multiple data types.");
         return false;
 
     } else if (type_set.size() == 0) {
         _error = L_S(STR_PAGE_MSG, S_ID(IDS_MSG_STORESESS_SAVESTART_ERROR2), "No data to save.");
+        dsv_info("StoreSession::save_start() aborted: no data to save.");
         return false;
     }
 
     if (_file_name == ""){
         _error = L_S(STR_PAGE_MSG, S_ID(IDS_MSG_STORESESS_SAVESTART_ERROR3), "No file name.");
+        dsv_info("StoreSession::save_start() aborted: file name is empty.");
         return false;
     }
 
@@ -164,6 +169,7 @@ bool StoreSession::save_start()
     // Check we have data
     if (snapshot->empty()) {
         _error = L_S(STR_PAGE_MSG, S_ID(IDS_MSG_STORESESS_SAVESTART_ERROR2), "No data to save.");
+        dsv_info("StoreSession::save_start() aborted: snapshot is empty.");
         return false;
     }
 
@@ -177,16 +183,19 @@ bool StoreSession::save_start()
 
     if (meta_data.empty()) {
         _error = L_S(STR_PAGE_MSG, S_ID(IDS_MSG_STORESESS_SAVESTART_ERROR4), "Generate temp file data failed.");
+        dsv_info("StoreSession::save_start() aborted: meta data generation failed.");
         QFile::remove(_file_name);
         return false;
     }
     if (decoder_data.empty()){
         _error = L_S(STR_PAGE_MSG, S_ID(IDS_MSG_STORESESS_SAVESTART_ERROR5), "Generate decoder file data failed.");
+        dsv_info("StoreSession::save_start() aborted: decoder data generation failed.");
         QFile::remove(_file_name);
         return false;
     }
     if (session_data.empty()){
         _error = L_S(STR_PAGE_MSG, S_ID(IDS_MSG_STORESESS_SAVESTART_ERROR6), "Generate session file data failed.");
+        dsv_info("StoreSession::save_start() aborted: session data generation failed.");
         QFile::remove(_file_name);
         return false;
     }
@@ -212,9 +221,11 @@ bool StoreSession::save_start()
     }
     else{
          _error = L_S(STR_PAGE_MSG, S_ID(IDS_MSG_STORESESS_SAVESTART_ERROR7), "Generate zip file failed.");
+            dsv_info("StoreSession::save_start() aborted: zip creation failed.");
     }
 
     QFile::remove(_file_name);
+        dsv_info("StoreSession::save_start() failed.");
     return false;
 }
 

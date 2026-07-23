@@ -108,6 +108,8 @@ private slots:
     void on_search(bool visible);
     void on_screenShot();
     void on_save();
+    void on_capture_setup();
+    void on_decode_complete();
 
     void on_export();
     bool on_load_session(QString name);  
@@ -144,6 +146,8 @@ private:
     void check_usb_device_speed();
     void reset_all_view();
     bool confirm_to_store_data();
+    void maybe_auto_save_capture();
+    void start_auto_save_capture();
     void update_toolbar_view_status();
     void calc_min_height();    
     void update_title_bar_text();
@@ -179,6 +183,7 @@ private:
     void show_wait_trigger() override;
     void repeat_hold(int percent) override;
     void decode_done() override;
+    void decode_complete() override;
     void receive_data_len(quint64 len) override;
     void receive_header() override;    
     void trigger_message(int msg) override;   
@@ -237,6 +242,7 @@ private:
     bool            _is_auto_switch_device;
     high_resolution_clock::time_point _last_key_press_time;
     bool            _is_save_confirm_msg;
+    bool            _auto_save_pending;
     QString         _pattern_mode;
     QWidget         *_frame;
     DsTimer         _delay_prop_msg_timer;

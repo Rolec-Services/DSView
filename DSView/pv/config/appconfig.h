@@ -54,7 +54,7 @@ public:
 };
 
 
-#define APP_CONFIG_VERSION  3
+#define APP_CONFIG_VERSION  4
 #define NO_POINT_VALUE  -10000
 
 struct AppOptions
@@ -71,6 +71,7 @@ struct AppOptions
     bool  displayProfileInBar;
     bool  swapBackBufferAlways;
     bool  autoScrollLatestData;
+    bool  autoSaveCapture;
     float fontSize;
 
     std::vector<StringPair> m_protocolFormats;
